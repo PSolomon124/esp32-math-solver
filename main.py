@@ -1,56 +1,42 @@
 from flask import Flask, request, jsonify
-from sympy import symbols, solve, diff, integrate, limit, sin, Eq
+import sympy as sp
 
-app = Flask(__name__)
+app = Flask(_name_)
 
-# Define x as a symbol globally
-x = symbols('x')
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Railway API is running. Use /solve with POST method."})
 
-@app.route('/solve', methods=['POST'])
-def solve_math():
+@app.route("/solve", methods=["POST"])
+def solve_equation():
     try:
+        # Get JSON data from ESP32
         data = request.get_json()
-        equation = data.get("equation")
+        equation_str = data.get("equation", "")
 
-        # Check if the equation is provided
-        if not equation:
+        if not equation_str:
             return jsonify({"error": "No equation provided"}), 400
 
-        # Handle differentiation
-        if equation.startswith("diff"):
-            expr = equation.replace("diff(", "").replace(")", "")
-            expr = eval(expr, {"x": x})  # Safely evaluate with SymPy
-            result = str(diff(expr, x))
+        # Convert equation string to SymPy expression
+        x = sp.Symbol("x")
+        try:
+            equation = sp.sympify(equation_str)
+        except Exception as e:
+            return jsonify({"error": f"Invalid equation: {str(e)}"}), 400
 
-        # Handle integration
-        elif equation.startswith("integrate"):
-            expr = equation.replace("integrate(", "").replace(")", "")
-            expr = eval(expr, {"x": x})
-            result = str(integrate(expr, x))
-
-        # Handle limits
-        elif equation.startswith("limit"):
-            expr = equation.replace("limit(", "").replace(")", "")
-            func, var, val = expr.split(",")
-            func = eval(func, {"x": x})
-            val = eval(val)
-            result = str(limit(func, x, val))
-
-        # Handle algebraic solving
-        elif equation.startswith("solve"):
-            expr = equation.replace("solve(", "").replace(")", "")
-            lhs, rhs = expr.split("=")
-            lhs = eval(lhs, {"x": x})
-            rhs = eval(rhs, {"x": x})
-            result = str(solve(Eq(lhs, rhs), x))
-
+        # Solve the equation based on the type of request
+        if "diff" in equation_str:
+            solution = sp.diff(equation, x)
+        elif "integrate" in equation_str:
+            solution = sp.integrate(equation, x)
+        elif "limit" in equation_str:
+            solution = sp.limit(equation, x, 0)
+        elif "solve" in equation_str:
+            solution = sp.solve(equation, x)
         else:
-            return jsonify({"error": "Unsupported operation"}), 400
+            return jsonify({"error": "Unknown operation"}), 400
 
-        return jsonify({"solution": result})
+        return jsonify({"solution": str(solution)})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+        return
