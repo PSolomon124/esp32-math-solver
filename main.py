@@ -11,7 +11,7 @@ def differentiate(expression):
     steps = sp.pretty(sp.diff(expr, x, evaluate=False))
     return str(derivative), steps
 
-@app.route('/solve', methods=['POST'])
+@app.route('/solve', methods=['POST', GET])
 def solve():
     data = request.json
     expression = data.get('expression', '')
