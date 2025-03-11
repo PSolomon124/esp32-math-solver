@@ -1,42 +1,29 @@
-from flask import Flask, request, jsonify
 import sympy as sp
+from flask import Flask, request, jsonify
+import os
 
 app = Flask(_name_)
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"message": "Railway API is running. Use /solve with POST method."})
+def differentiate(expression):
+    x = sp.symbols('x')
+    expr = sp.sympify(expression)
+    derivative = sp.diff(expr, x)
+    steps = sp.pretty(sp.diff(expr, x, evaluate=False))
+    return str(derivative), steps
 
-@app.route("/solve", methods=["POST"])
-def solve_equation():
+@app.route('/solve', methods=['POST'])
+def solve():
+    data = request.json
+    expression = data.get('expression', '')
+    if not expression:
+        return jsonify({'error': 'No expression provided'}), 400
+    
     try:
-        # Get JSON data from ESP32
-        data = request.get_json()
-        equation_str = data.get("equation", "")
-
-        if not equation_str:
-            return jsonify({"error": "No equation provided"}), 400
-
-        # Convert equation string to SymPy expression
-        x = sp.Symbol("x")
-        try:
-            equation = sp.sympify(equation_str)
-        except Exception as e:
-            return jsonify({"error": f"Invalid equation: {str(e)}"}), 400
-
-        # Solve the equation based on the type of request
-        if "diff" in equation_str:
-            solution = sp.diff(equation, x)
-        elif "integrate" in equation_str:
-            solution = sp.integrate(equation, x)
-        elif "limit" in equation_str:
-            solution = sp.limit(equation, x, 0)
-        elif "solve" in equation_str:
-            solution = sp.solve(equation, x)
-        else:
-            return jsonify({"error": "Unknown operation"}), 400
-
-        return jsonify({"solution": str(solution)})
-
+        result, steps = differentiate(expression)
+        return jsonify({'result': result, 'steps': steps})
     except Exception as e:
-        return
+        return jsonify({'error': str(e)}), 500
+
+if _name_ == '_main_':
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
