@@ -4,7 +4,7 @@ from sympy import sympify, simplify
 app = Flask(__name__)
 
 # Defaulting to port 5000 directly
-port = 3000
+port = 5000
 
 @app.route("/", methods=["GET"])
 def home():
