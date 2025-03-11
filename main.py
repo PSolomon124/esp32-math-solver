@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
-import os
+from sympy import sympify, simplify
 
 app = Flask(__name__)
 
-# Setting the port dynamically from the environment variable or defaulting to 3000
-port = int(os.getenv("PORT", 3000))
+# Defaulting to port 5000 directly
+port = 3000
 
 @app.route("/", methods=["GET"])
 def home():
@@ -26,9 +26,10 @@ def math():
         if not expression:
             return jsonify({"error": "No mathematical expression provided"}), 400
         
-        # Example of simple evaluation (you can replace this with your math logic)
-        result = eval(expression)  # Note: Be cautious with eval in production
-        return jsonify({"expression": expression, "result": result})
+        # Use SymPy to evaluate and simplify the expression
+        expr = sympify(expression)
+        result = simplify(expr)
+        return jsonify({"expression": str(expression), "result": str(result)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
