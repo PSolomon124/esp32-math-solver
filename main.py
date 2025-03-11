@@ -18,8 +18,11 @@ def data():
         data = request.json  # Get JSON data from the POST request
         return jsonify({"message": "POST request received", "data": data})
 
-@app.route("/api/math", methods=["POST"])
+@app.route("/api/math", methods=["GET", "POST"])
 def math():
+    if request.method == "GET":
+        return jsonify({"message": "Use POST to send a mathematical expression."})
+
     try:
         data = request.json
         expression = data.get("expression")
