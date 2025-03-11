@@ -4,7 +4,7 @@ import os
 app = Flask(__name__)
 
 # Setting the port dynamically from the environment variable or defaulting to 3000
-port = int(os.getenv("PORT", 5000))
+port = int(os.getenv("PORT", 3000))
 
 @app.route("/", methods=["GET"])
 def home():
