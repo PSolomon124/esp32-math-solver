@@ -32,6 +32,6 @@ def math():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name_ == "__main__":
+if __name__ == "__main__":
     # Running the server on 0.0.0.0 to be accessible from Railway
     app.run(host="0.0.0.0", port=port)
