@@ -2,7 +2,7 @@ import sympy as sp
 from flask import Flask, request, jsonify
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 def differentiate(expression):
     x = sp.symbols('x')
@@ -24,6 +24,6 @@ def solve():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if _name_ == '_main_':
+if__name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
